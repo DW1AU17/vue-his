@@ -1,6 +1,6 @@
 <template>
   <el-menu
-    default-active="2"
+    default-active="/fastReg"
     @open="handleOpen"
     @close="handleClose"
     background-color="#545c64"

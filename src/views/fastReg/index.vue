@@ -1,70 +1,81 @@
 <template>
   <div>
     <div style="margin-bottom: 10px;">
-      <el-button size="small" @click="addTab(editableTabsValue)">add tab</el-button>
+      <el-button size="small" @click="addTab('中药开方', 'Ch')">中药开方</el-button>
     </div>
-    <el-tabs v-model="editableTabsValue" type="card" @tab-remove="removeTab">
+    <el-tabs v-model="activeTabNum" type="card" @tab-remove="removeTab">
       <el-tab-pane
-        v-for="item in editableTabs"
+        v-for="(item, index) in tabList"
         :key="item.name"
         :label="item.title"
         :name="item.name"
-        :closable="item.name > 2"
-      >{{item.content}}</el-tab-pane>
+        :closable="index > 1"
+        lazy
+      >
+        <component :is="item.content"></component>
+      </el-tab-pane>
     </el-tabs>
   </div>
 </template>
 
 <script>
 export default {
+  components: {
+    Record: () => import('./components/record'),
+    West: () => import('./components/west'),
+    Ch: () => import('./components/ch'),
+    History: () => import('./components/history')
+  },
   data() {
     return {
-      editableTabsValue: "1",
-      editableTabs: [
+      activeTabNum: '2', // 当前活动 tab 序号
+      tabList: [
         {
-          title: "Tab 1",
-          name: "1",
-          content: "record"
+          title: '历史记录',
+          name: '1',
+          content: 'History'
         },
         {
-          title: "Tab 2",
-          name: "2",
-          content: "history"
+          title: '门诊病例',
+          name: '2',
+          content: 'Record'
         }
       ],
-      tabIndex: 2
-    };
+      tabIndex: 2 // tab 的数量
+    }
   },
   methods: {
-    addTab(targetName) {
-      console.log(targetName)
-      let newTabName = ++this.tabIndex + "";
-      this.editableTabs.push({
-        title: "New Tab",
+    /**
+     * 新增tab
+     * @param {String} tabName tab名字
+     * @param {String} compName 对应加载的组件名字
+     */
+    addTab(tabName, compName) {
+      let newTabName = ++this.tabIndex + ''
+      this.tabList.push({
+        title: tabName,
         name: newTabName,
-        content: "New Tab content"
-      });
-      this.editableTabsValue = newTabName;
+        content: compName
+      })
+      this.activeTabNum = newTabName
     },
-    removeTab(targetName) {
-      let tabs = this.editableTabs;
-      let activeName = this.editableTabsValue;
-      if (activeName === targetName) {
-        tabs.forEach((tab, index) => {
-          if (tab.name === targetName) {
-            let nextTab = tabs[index - 1];
-            if (nextTab) {
-              activeName = nextTab.name;
-            }
-          }
-        });
+    /**
+     * 关闭tab
+     * @param {String} tabName tab
+     */
+    removeTab(tabName) {
+      let tabs = this.tabList
+      let activeName = this.activeTabNum
+      // 当删除的是当前选择项 tab
+      if (activeName === tabName) {
+        this.activeTabNum = tabs[tabs.length - 2].name
       }
-
-      this.editableTabsValue = activeName;
-      this.editableTabs = tabs.filter(tab => tab.name !== targetName);
+      this.tabIndex--
+      this.tabList = tabs.filter(tab => tab.name !== tabName)
     }
-  }
-};
+  },
+  computed: {}
+}
 </script>
 
 <style>
